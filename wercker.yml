@@ -40,7 +40,7 @@ build:
 
     # Test the project
     - script:
-        name: go test -v
+        name: go test
         code: |
-          go test ./...
+          go test ./... -v
           go test -cover
