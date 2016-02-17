@@ -43,3 +43,4 @@ build:
         name: go test -v
         code: |
           go test ./...
+          go test -cover
