@@ -15,9 +15,11 @@ func Hello(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	mux := http.NewServeMux()
+	// mux := http.NewServeMux()
 
-	mux.HandleFunc("/", Hello)
-	
-	http.ListenAndServe(":8080", mux)
+	// mux.HandleFunc("/", Hello)
+
+	http.HandlerFunc("/",Hello)
+
+	http.ListenAndServe(":8080", nil)
 }

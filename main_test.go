@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestResp(t *testing.T) {
@@ -13,6 +14,7 @@ func TestResp(t *testing.T) {
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
 		log.Fatal(err)
+		//fmt.Println(err)
 	}
 
 	resp := httptest.NewRecorder()
