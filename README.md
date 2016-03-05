@@ -3,6 +3,9 @@
 -------------
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/gunjan5/MemFlash/blob/master/LICENSE)
 
+MemFlash is a multithreaded library with priority based query to access Memcache and Redis cache with Databse faster.
+MemFlash also uses gRPC with Protobufs and HTTP/2 to transfer fewer bytes to/from cache/DB with header compression and session reuse (HTTP/2) 
+
 ##Tasks:
 ### Technologies:
 - [ ] Memcache 
