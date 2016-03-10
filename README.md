@@ -1,5 +1,5 @@
 ## MemFlash
-:zap: Faster access to Memcache &amp; Redis :zap:
+:zap: Faster access to your data :zap:
 -------------
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/gunjan5/MemFlash/blob/master/LICENSE)
 
@@ -8,22 +8,23 @@ MemFlash also uses gRPC with Protobufs and HTTP/2 to transfer fewer bytes to/fro
 
 ##Tasks:
 ### Technologies:
-- [ ] Memcache 
+- [x] Memcache 
 - [ ] Redis
-- [ ] BD? Postgres/mySQL or MongoDB/NoSQL?
-- [ ] JSON
+- [x] BD? Postgres/mySQL or MongoDB/NoSQL?
+- [x] JSON
 - [ ] gRPC
 - [ ] Protobufs
 - [ ] HTTP/2
-- [ ] Performance monitoring
-- [ ] Performance graph StatsD?
+- [x] Performance monitoring
+- [x] Performance graph StatsD?
 - [ ] Google AppEngine
+- [ ] Memcache Proxy
 
 ### Infrastructure:
-- [ ] Statically cross compiled binary 
+- [x] Statically cross compiled binary 
 - [ ] CI/CD with Travis 
-- [ ] Docker images
-- [ ] Images on DockerHub
+- [x] Docker images
+- [x] Images on DockerHub
 - [ ] AWS/GCE
 
 

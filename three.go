@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"strconv"
 
 	// "github.com/bradfitz/gomemcache/memcache"
@@ -28,7 +27,7 @@ const (
 	MONGO_PORT  = ":27017"
 	STATSD_IP   = "192.168.99.100"
 	STATSD_PORT = ":8125"
-	TIMEOUT     = 3
+	TIMEOUT     = 100
 )
 
 type Person struct {
@@ -62,8 +61,8 @@ func main() {
 	c := session.DB("test").C("people")
 
 	result := Person{}
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
+	// s1 := rand.NewSource(time.Now().UnixNano())
+	// r1 := rand.New(s1)
 
 	start := time.Now()
 
@@ -79,7 +78,7 @@ func main() {
 
 		start1 := time.Now()
 		go func() {
-			time.Sleep(TIMEOUT * time.Second)
+			time.Sleep(TIMEOUT * time.Millisecond)
 			timeout <- true
 		}()
 
@@ -112,24 +111,24 @@ func main() {
 
 			//log.Println("Mongo Result:", result.Data)
 			//fmt.Println("MONGO RES ~~~~~~~~~~~~~~")
-			time.Sleep(time.Duration(r1.Intn(6)) * time.Millisecond)
+			//time.Sleep(time.Duration(r1.Intn(6)) * time.Millisecond)
 			mongoCh <- true
 
 		}(i)
 
 		select {
 		case <-memCh:
-			fmt.Println("MEMCACHE WINS!!")
-			fmt.Printf("* time %s \n ", time.Since(start1))
+			fmt.Println("Memcache WINS")
+			fmt.Printf("*** time %s \n ", time.Since(start1))
 			stats.Gauge("p3", int64(time.Since(start1)))
-			//<-timeout
+			<-timeout
 		case <-mongoCh:
-			fmt.Println("MONGO wins xxxxxxxxxxxxxxxxxx")
-			fmt.Printf("* time %s \n ", time.Since(start1))
+			fmt.Println("MONGO wins")
+			fmt.Printf("*** time %s \n ", time.Since(start1))
 			stats.Gauge("p3", int64(time.Since(start1)))
-			//<-timeout
+			<-timeout
 		case <-timeout:
-			fmt.Println("TOO SLOW------------------------------------------")
+			fmt.Println("Slow connection")
 			continue
 
 		}

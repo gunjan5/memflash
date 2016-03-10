@@ -28,7 +28,7 @@ const (
 	MONGO_PORT  = ":27017"
 	STATSD_IP   = "192.168.99.100"
 	STATSD_PORT = ":8125"
-	TIMEOUT     = 3
+	TIMEOUT     = 100
 )
 
 type Person struct {
@@ -77,7 +77,7 @@ func main() {
 
 		start1 := time.Now()
 		go func() {
-			time.Sleep(TIMEOUT * time.Second)
+			time.Sleep(TIMEOUT * time.Millisecond)
 			timeout <- true
 		}()
 
@@ -91,7 +91,7 @@ func main() {
 				err = c.Find(bson.M{"index": strconv.Itoa(i)}).One(&result)
 				check(err)
 
-				time.Sleep(time.Duration(r1.Intn(12)) * time.Millisecond)
+				time.Sleep(time.Duration(r1.Intn(4)) * time.Millisecond)
 				mongoCh <- true
 			}
 			if item != nil {
@@ -104,17 +104,17 @@ func main() {
 
 		select {
 		case <-memCh:
-			fmt.Println("MEMCACHE WINS~~~~~~~~~~~~~~~~~~")
-			fmt.Printf("* time %s \n ", time.Since(start1))
+			fmt.Println("Memcache WINS")
+			fmt.Printf("*** time %s \n ", time.Since(start1))
 			stats.Gauge("p2", int64(time.Since(start1)))
-			//<- timeout
+			<-timeout
 		case <-mongoCh:
-			fmt.Println("MONGO wins xxxxxxxxxxxxxxxxxx")
-			fmt.Printf("* time %s \n ", time.Since(start1))
+			fmt.Println("MONGO wins")
+			fmt.Printf("*** time %s \n ", time.Since(start1))
 			stats.Gauge("p2", int64(time.Since(start1)))
-			//<-timeout
+			<-timeout
 		case <-timeout:
-			fmt.Println("TOO SLOW------------------------------------------")
+			fmt.Println("Slow connection")
 			continue
 
 		}
