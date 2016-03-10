@@ -6,20 +6,16 @@ import (
 	// "log"
 	// "gopkg.in/mgo.v2"
 	// "gopkg.in/mgo.v2/bson"
-
 )
 
 type DB struct {
 	Mem, Mongo string
-	Mc *memcache.Client
+	Mc         *memcache.Client
 }
 
-
-func (d *DB) New() *DB{
+func (d *DB) New() *memcache.Client {
 	d.Mc = memcache.New(d.Mem)
 
-	return d
+	return d.Mc
 
 }
-
-

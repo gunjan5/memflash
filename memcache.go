@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/bradfitz/gomemcache/memcache"
+
+	//"github.com/bradfitz/gomemcache/memcache"
+	"github.com/gunjan5/memflash/memflash"
 	// "database/sql"
 	//_ "github.com/lib/pq"
 	"log"
@@ -14,23 +16,37 @@ const (
 	DB_PASSWORD = "mypassword"
 	DB_NAME     = "test"
 	DB_HOST     = "192.168.99.100"
+	MEM_IP      = "192.168.99.100"
+	MEM_PORT    = ":11211"
+	MONGO_IP    = "192.168.99.100"
+	MONGO_PORT  = ":27017"
 )
 
 func main() {
-	mc := memcache.New("192.168.99.100:11211")
-	mc.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
 
-	item, _ := mc.Get("foo")
+	//mc := memcache.New("192.168.99.100:11211")
+	//fmt.Printf("mc: %T\n", mc)
+	mydb := memflash.DB{MEM_IP + MEM_PORT, "", nil}
+
+	ref := mydb.New()
+
+	// 	ref.Set(&memcache.Item{Key: "foo", Value: []byte(`{
+	// "index": "1",
+	// "index_start_at": "56",
+	// "integer": "34",
+	// "float": "17.2187",
+	// "name": "Maxine",
+	// "surname": "Chandler",
+	// "fullname": "Harvey O",
+	// "email": "kimberly@cooke.sb",
+	// "bool": "true"
+	// }`)})
+
+	item, _ := ref.Get("0")
 	if item != nil {
-		fmt.Println(string(item.Value))
+		fmt.Println("Result:", string(item.Value))
 	}
 
-	// dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable",
-	// DB_USER, DB_PASSWORD, DB_NAME, DB_HOST)
-
-	// db, err := sql.Open("postgres", dbinfo)
-	check(err)
-	// defer db.Close()
 }
 
 func check(err error) {

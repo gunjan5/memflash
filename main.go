@@ -2,12 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/gunjan5/MemFlash/memflash"
+	"strconv"
+
 	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/gunjan5/memflash/memflash"
 	// "database/sql"
 	//_ "github.com/lib/pq"
 	"log"
 	//"time"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -15,37 +19,96 @@ const (
 	DB_PASSWORD = "mypassword"
 	DB_NAME     = "test"
 	DB_HOST     = "192.168.99.100"
+	MEM_IP      = "192.168.99.100"
+	MEM_PORT    = ":11211"
+	MONGO_IP    = "192.168.99.100"
+	MONGO_PORT  = ":27017"
 )
 
+type Person struct {
+	Index string
+	Data  string
+}
+
 func main() {
+	in:=""
+	memCh := make(chan bool)
+	mongoCh := make(chan bool)
 
 	//mc := memcache.New("192.168.99.100:11211")
-	mydb := memflash.DB{"192.168.99.100:11211", "", nil}
-	ref:=mydb.New()
-	ref.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
-	//mc.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
+	//fmt.Printf("mc: %T\n", mc)
+	mydb := memflash.DB{MEM_IP + MEM_PORT, "", nil}
 
-	item, _ := ref.Get("foo")
-	if item != nil {
-		fmt.Println(string(item.Value))
+	ref := mydb.New()
+
+	session, err := mgo.Dial(MONGO_IP + MONGO_PORT)
+	if err != nil {
+		panic(err)
 	}
 
-	// item, _ := mc.Get("foo")
-	// if item != nil {
-	// 	fmt.Println(string(item.Value))
-	// }
+	defer session.Close()
 
-	// dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable",
-	// DB_USER, DB_PASSWORD, DB_NAME, DB_HOST)
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB("test").C("people")
 
-	// db, err := sql.Open("postgres", dbinfo)
-	//check(err)
-	// defer db.Close()
+	result := Person{}
+
+	// 	ref.Set(&memcache.Item{Key: "foo", Value: []byte(`{
+	// "index": "1",
+	// "index_start_at": "56",
+	// "integer": "34",
+	// "float": "17.2187",
+	// "name": "Maxine",
+	// "surname": "Chandler",
+	// "fullname": "Harvey O",
+	// "email": "kimberly@cooke.sb",
+	// "bool": "true"
+	// }`)})
+	for i := 0; i < 10; i++ {
+
+
+		go func(i int) {
+
+			item, err := ref.Get(strconv.Itoa(i))
+		if err == memcache.ErrCacheMiss {
+			//fmt.Println("CACHE MISS!!!!!")
+		}
+		if item != nil {
+			//log.Println("*******************  Mem Result:", string(item.Value))
+			//fmt.Println("HIT")
+
+		}
+		memCh<- true
+		}(i)
+
+		go func(i int) {
+			err = c.Find(bson.M{"index": strconv.Itoa(i)}).One(&result)
+		//fmt.Println(err)
+		check(err)
+
+		//log.Println("Mongo Result:", result.Data)
+		//fmt.Println("MONGO RES ~~~~~~~~~~~~~~")
+		mongoCh <- true
+
+		}(i)
+
+		select{
+		case <-memCh:
+			fmt.Println("MEMCACHE WINS!!")
+		case <-mongoCh:
+			fmt.Println("MONGO wins")
+
+		}
+
+	}
+
+	fmt.Scanf("%s", &in)
+
 }
 
 func check(err error) {
 	if err != nil {
-		panic(err)
+		//panic(err)
 		log.Fatalf("ERROR: %s", err)
 
 	}
