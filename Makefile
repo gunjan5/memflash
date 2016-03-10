@@ -23,6 +23,13 @@ run:
 build:
 	GOOS=linux GOARCH=amd64 go build -o app
 
+depsave:
+	godep save
+	
+depupdate:
+	go get -t -v ./...
+	godep update
+
 mongo:
 	docker run -p 27017:27017 -d mongo
 
