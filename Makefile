@@ -22,3 +22,12 @@ run:
 
 build:
 	GOOS=linux GOARCH=amd64 go build -o app
+
+mongo:
+	docker run -p 27017:27017 -d mongo
+
+mem:
+	docker run -p 11211:11211 -d memcached
+
+stats:
+	docker run -d -p 80:80 -p 2003-2004:2003-2004 -p 2023-2024:2023-2024 -p 8125:8125/udp -p 8126:8126 hopsoft/graphite-statsd

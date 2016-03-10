@@ -25,3 +25,10 @@ MemFlash also uses gRPC with Protobufs and HTTP/2 to transfer fewer bytes to/fro
 - [ ] Docker images
 - [ ] Images on DockerHub
 - [ ] AWS/GCE
+
+
+
+Setup:
+- Start memcached container: `docker run -p 11211:11211 --name my-memcache -d memcached`
+- Start MongoDB container: `docker run -p 27017:27017 -d mongo`
+
