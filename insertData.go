@@ -58,7 +58,7 @@ func main() {
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 10000; i++ {
 
 		jsondata := fmt.Sprintf(
 			`{

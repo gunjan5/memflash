@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 
 	"github.com/bradfitz/gomemcache/memcache"
@@ -10,6 +11,8 @@ import (
 	//_ "github.com/lib/pq"
 	"log"
 	"time"
+
+	"github.com/quipo/statsd"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -23,6 +26,9 @@ const (
 	MEM_PORT    = ":11211"
 	MONGO_IP    = "192.168.99.100"
 	MONGO_PORT  = ":27017"
+	STATSD_IP   = "192.168.99.100"
+	STATSD_PORT = ":8125"
+	TIMEOUT     = 3
 )
 
 type Person struct {
@@ -31,9 +37,13 @@ type Person struct {
 }
 
 func main() {
-	in:=""
-	memCh := make(chan bool)
-	mongoCh := make(chan bool)
+	in := ""
+
+	prefix := "MemFlash."
+	stats := statsd.NewStatsdClient(STATSD_IP+STATSD_PORT, prefix)
+	err := stats.CreateSocket()
+	check(err)
+	//stats:=statsd.NewStatsdBuffer(1*time.Second, statsdclient)
 
 	//mc := memcache.New("192.168.99.100:11211")
 	//fmt.Printf("mc: %T\n", mc)
@@ -52,53 +62,60 @@ func main() {
 	c := session.DB("test").C("people")
 
 	result := Person{}
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
 
 	start := time.Now()
 
+	for i := 0; i < 10000; i++ {
+		memCh := make(chan bool)
+		mongoCh := make(chan bool)
+		timeout := make(chan bool, 1)
+		fmt.Println("Iteration: ", i)
 
-	for i := 0; i < 10; i++ {
+		//time.Sleep(5*time.Millisecond)
+
 		start1 := time.Now()
-
+		go func() {
+			time.Sleep(TIMEOUT * time.Second)
+			timeout <- true
+		}()
 
 		go func(i int) {
 
 			item, err := ref.Get(strconv.Itoa(i))
-		if err == memcache.ErrCacheMiss {
-			//fmt.Println("CACHE MISS!!!!!")
-			err = c.Find(bson.M{"index": strconv.Itoa(i)}).One(&result)
-		//fmt.Println(err)
-		check(err)
 
-		//log.Println("Mongo Result:", result.Data)
-		//fmt.Println("MONGO RES ~~~~~~~~~~~~~~")
-		mongoCh <- true
-		}
-		if item != nil {
-			//log.Println("*******************  Mem Result:", string(item.Value))
-			//fmt.Println("HIT")
+			if err == memcache.ErrCacheMiss {
 
-		}
-		memCh<- true
+				//Cache MISS, try DB
+				err = c.Find(bson.M{"index": strconv.Itoa(i)}).One(&result)
+				check(err)
+
+				time.Sleep(time.Duration(r1.Intn(12)) * time.Millisecond)
+				mongoCh <- true
+			}
+			if item != nil {
+				//HIT
+				memCh <- true
+
+			}
+
 		}(i)
 
-		// go func(i int) {
-		// 	err = c.Find(bson.M{"index": strconv.Itoa(i)}).One(&result)
-		// //fmt.Println(err)
-		// check(err)
-
-		// //log.Println("Mongo Result:", result.Data)
-		// //fmt.Println("MONGO RES ~~~~~~~~~~~~~~")
-		// mongoCh <- true
-
-		// }(i)
-
-		select{
+		select {
 		case <-memCh:
-			fmt.Println("MEMCACHE WINS!!")
+			fmt.Println("MEMCACHE WINS~~~~~~~~~~~~~~~~~~")
 			fmt.Printf("* time %s \n ", time.Since(start1))
+			stats.Gauge("p2", int64(time.Since(start1)))
+			//<- timeout
 		case <-mongoCh:
-			fmt.Println("MONGO wins")
+			fmt.Println("MONGO wins xxxxxxxxxxxxxxxxxx")
 			fmt.Printf("* time %s \n ", time.Since(start1))
+			stats.Gauge("p2", int64(time.Since(start1)))
+			//<-timeout
+		case <-timeout:
+			fmt.Println("TOO SLOW------------------------------------------")
+			continue
 
 		}
 
