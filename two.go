@@ -4,11 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
-
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/gunjan5/memflash/memflash"
-	// "database/sql"
-	//_ "github.com/lib/pq"
 	"log"
 	"time"
 
@@ -91,7 +88,7 @@ func main() {
 				err = c.Find(bson.M{"index": strconv.Itoa(i)}).One(&result)
 				check(err)
 
-				time.Sleep(time.Duration(r1.Intn(4)) * time.Millisecond)
+				time.Sleep(time.Duration(r1.Intn(3)) * time.Millisecond)
 				mongoCh <- true
 			}
 			if item != nil {

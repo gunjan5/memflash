@@ -2,12 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
-
-	// "github.com/bradfitz/gomemcache/memcache"
-	// "github.com/gunjan5/memflash/memflash"
-	// "database/sql"
-	//_ "github.com/lib/pq"
 	"log"
 	"time"
 
@@ -61,8 +57,8 @@ func main() {
 	c := session.DB("test").C("people")
 
 	result := Person{}
-	// s1 := rand.NewSource(time.Now().UnixNano())
-	// r1 := rand.New(s1)
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
 
 	start := time.Now()
 
@@ -111,7 +107,7 @@ func main() {
 
 			//log.Println("Mongo Result:", result.Data)
 			//fmt.Println("MONGO RES ~~~~~~~~~~~~~~")
-			//time.Sleep(time.Duration(r1.Intn(6)) * time.Millisecond)
+			time.Sleep(time.Duration(r1.Intn(3)+2) * time.Millisecond)
 			mongoCh <- true
 
 		}(i)

@@ -73,7 +73,8 @@ func main() {
 	"bool": "true"
 	}`, i, r1.Intn(100), rune(65+r1.Intn(26)))
 
-		fmt.Println(jsondata)
+		//fmt.Println(jsondata)
+		fmt.Println("Inserting data for offset index: ", i)
 
 		c := session.DB("test").C("people")
 		err = c.Insert(&Person{strconv.Itoa(i), jsondata})
