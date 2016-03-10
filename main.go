@@ -9,7 +9,7 @@ import (
 	// "database/sql"
 	//_ "github.com/lib/pq"
 	"log"
-	//"time"
+	"time"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -53,18 +53,11 @@ func main() {
 
 	result := Person{}
 
-	// 	ref.Set(&memcache.Item{Key: "foo", Value: []byte(`{
-	// "index": "1",
-	// "index_start_at": "56",
-	// "integer": "34",
-	// "float": "17.2187",
-	// "name": "Maxine",
-	// "surname": "Chandler",
-	// "fullname": "Harvey O",
-	// "email": "kimberly@cooke.sb",
-	// "bool": "true"
-	// }`)})
+	start := time.Now()
+
+
 	for i := 0; i < 10; i++ {
+		start1 := time.Now()
 
 
 		go func(i int) {
@@ -72,6 +65,13 @@ func main() {
 			item, err := ref.Get(strconv.Itoa(i))
 		if err == memcache.ErrCacheMiss {
 			//fmt.Println("CACHE MISS!!!!!")
+			err = c.Find(bson.M{"index": strconv.Itoa(i)}).One(&result)
+		//fmt.Println(err)
+		check(err)
+
+		//log.Println("Mongo Result:", result.Data)
+		//fmt.Println("MONGO RES ~~~~~~~~~~~~~~")
+		mongoCh <- true
 		}
 		if item != nil {
 			//log.Println("*******************  Mem Result:", string(item.Value))
@@ -81,26 +81,30 @@ func main() {
 		memCh<- true
 		}(i)
 
-		go func(i int) {
-			err = c.Find(bson.M{"index": strconv.Itoa(i)}).One(&result)
-		//fmt.Println(err)
-		check(err)
+		// go func(i int) {
+		// 	err = c.Find(bson.M{"index": strconv.Itoa(i)}).One(&result)
+		// //fmt.Println(err)
+		// check(err)
 
-		//log.Println("Mongo Result:", result.Data)
-		//fmt.Println("MONGO RES ~~~~~~~~~~~~~~")
-		mongoCh <- true
+		// //log.Println("Mongo Result:", result.Data)
+		// //fmt.Println("MONGO RES ~~~~~~~~~~~~~~")
+		// mongoCh <- true
 
-		}(i)
+		// }(i)
 
 		select{
 		case <-memCh:
 			fmt.Println("MEMCACHE WINS!!")
+			fmt.Printf("* time %s \n ", time.Since(start1))
 		case <-mongoCh:
 			fmt.Println("MONGO wins")
+			fmt.Printf("* time %s \n ", time.Since(start1))
 
 		}
 
 	}
+
+	fmt.Printf("****** Executed in time %s \n ", time.Since(start))
 
 	fmt.Scanf("%s", &in)
 
