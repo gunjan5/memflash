@@ -31,4 +31,5 @@ MemFlash also uses gRPC with Protobufs and HTTP/2 to transfer fewer bytes to/fro
 Setup:
 - Start memcached container: `docker run -p 11211:11211 --name my-memcache -d memcached`
 - Start MongoDB container: `docker run -p 27017:27017 -d mongo`
+- Start StatsD container: `docker run -d -p 80:80 -p 2003-2004:2003-2004 -p 2023-2024:2023-2024 -p 8125:8125/udp -p 8126:8126 hopsoft/graphite-statsd`
 
